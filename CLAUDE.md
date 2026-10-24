@@ -10,6 +10,9 @@ The first-party Zvirb game plugins: one Cargo workspace, one crate per game, eac
 | `Cargo.toml` | The workspace, its shared package fields and `[workspace.lints]` (`clippy::pedantic` at warn) |
 | `mise.toml` | Pinned Rust (with `wasm32-unknown-unknown`, `rustfmt`, `clippy`) and Node, plus the `check` and `fmt` tasks |
 | `scripts/check.mjs` | Runs the checks, or prints `No plugins yet` while the workspace has no members |
+| `scripts/check-actions.mjs` | Fails on a workflow `uses:` that isn't pinned to a commit SHA |
+| `scripts/check-advisories.mjs`, `osv-scanner.toml` | Runs `osv-scanner` over the lockfiles. An accepted advisory is an `[[IgnoredVulns]]` entry with `id`, `ignoreUntil` and `reason` |
+| `.github/workflows/` | `ci.yml` runs `mise run check` on Linux and Windows; `pr-title.yml` checks the PR title. Actions are pinned to SHAs, and Dependabot bumps them weekly |
 | `scripts/header.mjs` | Prints the header that names each check step |
 
 The plugin manifest and the PDK are not defined here. A crate takes them from the published PDK once it exists.
@@ -19,7 +22,7 @@ The plugin manifest and the PDK are not defined here. A crate takes them from th
 | Command | Does |
 | --- | --- |
 | `mise install` | Installs the pinned tools |
-| `mise run check` | With no members, prints `No plugins yet` and passes. Otherwise `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, then `cargo build --target wasm32-unknown-unknown --release` |
+| `mise run check` | Pinned actions and `osv-scanner` (with no lockfile it says `no lockfiles to scan` and passes), then, with no members, prints `No plugins yet` and passes. Otherwise `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, then `cargo build --target wasm32-unknown-unknown --release` |
 | `mise run fmt` | `cargo fmt` |
 
 Modules land in `target/wasm32-unknown-unknown/release/`.
