@@ -1,0 +1,23 @@
+# Every tool the checks need, at an exact version. Bump here and nowhere else.
+
+[tools]
+node = "24.22.1"
+
+[tools.rust]
+version = "1.99.1"
+targets = "wasm32-unknown-unknown"
+components = "rustfmt,clippy"
+
+[tasks.check]
+description = "Run every check; fails if any does"
+run = "node scripts/check.mjs"
+
+[tasks.fmt]
+description = "Rewrite files into rustfmt's output form"
+run = [
+  "node scripts/header.mjs cargo fmt",
+  "cargo fmt",
+]
+
+[settings]
+lockfile = true

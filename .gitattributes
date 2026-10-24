@@ -1,0 +1,4 @@
+# LF everywhere, whatever core.autocrlf says on the machine, so Windows and
+# Linux check the same bytes.
+* text=auto eol=lf
+*.png binary
