@@ -1,31 +1,35 @@
-// A tag can be moved after the fact, so every action is pinned to a commit.
-// Allowed: owner/repo[/path]@<40 hex>, ./local actions and docker://…@sha256:….
+// Fails on any `uses:` in .github/workflows that isn't pinned to a full commit
+// SHA, because a moved tag runs new code with the job's token. Local actions
+// (./path) and docker:// references with a digest are allowed.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const dir = ".github/workflows";
 const pinned = /^[\w.-]+\/[\w.-]+(\/[\w./-]+)?@[0-9a-f]{40}$/;
-const image = /^docker:\/\/\S+@sha256:[0-9a-f]{64}$/;
+const digest = /^docker:\/\/\S+@sha256:[0-9a-f]{64}$/;
 
-const files = existsSync(dir)
-  ? readdirSync(dir).filter((name) => name.endsWith(".yml"))
-  : [];
+const files = existsSync(dir) ? readdirSync(dir).filter((name) => /\.ya?ml$/.test(name)) : [];
 if (files.length === 0) {
   console.log("no workflows to check");
   process.exit(0);
 }
 
-let failed = false;
+const refused = [];
 for (const name of files) {
-  const lines = readFileSync(`${dir}/${name}`, "utf8").split("\n");
-  lines.forEach((line, index) => {
-    const match = line.match(/^\s*(?:-\s+)?uses:\s*(\S+)/);
-    if (!match) return;
-    const ref = match[1].replace(/^["']|["']$/g, "");
-    if (ref.startsWith("./") || pinned.test(ref) || image.test(ref)) return;
-    console.error(`${dir}/${name}:${index + 1}: ${ref} is not pinned to a commit SHA`);
-    failed = true;
-  });
+  readFileSync(join(dir, name), "utf8")
+    .split(/\r?\n/)
+    .forEach((line, index) => {
+      const match = line.match(/^\s*(?:-\s+)?uses:\s*["']?([^\s"'#]+)/);
+      if (!match) return;
+      const ref = match[1];
+      if (ref.startsWith("./") || pinned.test(ref) || digest.test(ref)) return;
+      refused.push(`${dir}/${name}:${index + 1}: ${ref}`);
+    });
 }
 
-if (failed) process.exit(1);
-console.log(`${files.length} workflow files, every action pinned`);
+if (refused.length > 0) {
+  console.error("actions must be pinned to a 40-character commit SHA (owner/repo@<sha> # <tag>):");
+  for (const line of refused) console.error(`  ${line}`);
+  process.exit(1);
+}
+console.log(`${files.length} workflow file(s), every action pinned`);
