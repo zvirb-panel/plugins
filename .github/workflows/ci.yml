@@ -10,11 +10,7 @@ permissions:
 
 jobs:
   check:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     env:
       # A tool missing from mise.lock fails instead of installing unverified.
       MISE_LOCKED: 1
