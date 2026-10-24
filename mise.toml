@@ -2,6 +2,7 @@
 
 [tools]
 node = "24.22.1"
+"aqua:google/osv-scanner" = "2.7.0"
 
 [tools.rust]
 version = "1.99.1"

@@ -1,0 +1,7 @@
+# Accepted advisories. Each entry names the advisory, says why it is accepted and
+# gives a date after which it fails the check again:
+#
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# ignoreUntil = 2027-01-31
+# reason = "Not reachable: we never call the affected function"

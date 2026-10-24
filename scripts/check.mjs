@@ -5,6 +5,17 @@ import { spawnSync } from "node:child_process";
 const run = (command, args) =>
   spawnSync(command, args, { stdio: "inherit" }).status ?? 1;
 
+const independent = [
+  ["node", "scripts/check-actions.mjs"],
+  ["node", "scripts/check-advisories.mjs"],
+];
+
+for (const [command, ...args] of independent) {
+  if (run("node", ["scripts/header.mjs", command, ...args]) !== 0) process.exit(1);
+  const status = run(command, args);
+  if (status !== 0) process.exit(status);
+}
+
 const metadata = spawnSync("cargo", ["metadata", "--no-deps", "--format-version", "1"], {
   encoding: "utf8",
 });
