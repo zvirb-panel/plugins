@@ -1,20 +1,12 @@
-// osv-scanner exits 128 when it finds no lockfile. A workspace that has none yet
-// has nothing to scan, which is not a failure.
+// Scans every lockfile for known advisories. An accepted advisory is written in
+// osv-scanner.toml with a reason and an ignoreUntil date, so it expires.
 import { spawnSync } from "node:child_process";
+import { exitIfNotStarted } from "./spawn.mjs";
 
-const NO_PACKAGE_SOURCES = 128;
-
-const result = spawnSync(
+const scan = spawnSync(
   "osv-scanner",
-  ["scan", "source", "--recursive", "--config", "osv-scanner.toml", "."],
+  ["scan", "source", "--recursive", "--allow-no-lockfiles", "--config", "osv-scanner.toml", "."],
   { stdio: "inherit" },
 );
-if (result.error) {
-  console.error(`could not start osv-scanner: ${result.error.message}`);
-  process.exit(1);
-}
-if (result.status === NO_PACKAGE_SOURCES) {
-  console.log("no lockfiles to scan");
-  process.exit(0);
-}
-process.exit(result.status ?? 1);
+exitIfNotStarted("osv-scanner", scan);
+process.exit(scan.status ?? 1);
