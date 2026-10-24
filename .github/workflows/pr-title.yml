@@ -1,0 +1,27 @@
+# The title of a squash-merged pull request becomes the commit on main, so it is
+# the title that must be a Conventional Commit.
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  conventional:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # A plugin id is the scope and ids are open-ended, so scopes are matched as
+        # a pattern: a plugin id, or ci, docs, deps.
+        with:
+          scopes: |
+            [a-z][a-z0-9]*(-[a-z0-9]+)*
+          requireScope: false
+          subjectPattern: ^[a-z].+[^.]$
+          subjectPatternError: Start the summary with a lower-case letter and leave off the full stop.
