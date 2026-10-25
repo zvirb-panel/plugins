@@ -5,12 +5,18 @@ on:
   push:
     branches: [main]
 
+# Only a pull request's runs share a group. A group also drops a pending run when a
+# third arrives, so a shared one would lose the middle of three quick merges to main.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.CI_RUNNER && fromJSON(vars.CI_RUNNER) || 'ubuntu-latest' }}
     env:
       # A tool missing from mise.lock fails instead of installing unverified.
       MISE_LOCKED: 1
