@@ -1,6 +1,6 @@
 # plugins
 
-The first-party Zvirb game plugins: one Cargo workspace, one crate per game, each built to a Wasm module. Read the workspace `CLAUDE.md` and `CONSTITUTION.md` first (`../zvirb-workspace`); they outrank this file. The workspace has no members yet.
+The first-party Zvirb game plugins: one Cargo workspace, one crate per game, each built to a Wasm module. Read the workspace `CLAUDE.md` and `.claude/rules/` first (`../zvirb-workspace`); they outrank this file. The workspace has no members yet.
 
 ## Layout
 
