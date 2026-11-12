@@ -2,8 +2,6 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
 
 # Only a pull request's runs share a group. A group also drops a pending run when a
 # third arrives, so a shared one would lose the middle of three quick merges to main.
