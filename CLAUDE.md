@@ -12,7 +12,7 @@ The first-party Zvirb game plugins: one Cargo workspace, one crate per game, eac
 | `scripts/check.mjs` | Runs the checks, or prints `No plugins yet` while the workspace has no members |
 | `scripts/check-actions.mjs` | Fails on a workflow `uses:` that isn't pinned to a commit SHA |
 | `scripts/check-advisories.mjs`, `osv-scanner.toml` | Runs `osv-scanner` over the lockfiles. An accepted advisory is an `[[IgnoredVulns]]` entry with `id`, `ignoreUntil` and `reason`. A lockfile entry without a `resolved` URL is not scanned. |
-| `.github/workflows/` | `ci.yml` runs `mise run check` on Linux; `pr-title.yml` checks the PR title. Actions are pinned to SHAs, and Dependabot bumps them weekly |
+| `.github/` | No workflows: checks run locally only, through `mise run check` |
 | `scripts/header.mjs` | Prints the header that names each check step |
 
 The plugin manifest and the PDK are not defined here. A crate takes them from the published PDK once it exists.
