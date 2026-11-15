@@ -1,0 +1,9 @@
+{
+  "$schema": "./zvirb-plugin.v1.schema.json",
+  "id": "sample",
+  "name": "Sample",
+  "version": "0.1.0",
+  "pdk": "^0.1",
+  "games": [{ "id": "sample", "name": "Sample" }],
+  "engines": [{ "game": "sample", "id": "sample", "name": "Sample" }]
+}
