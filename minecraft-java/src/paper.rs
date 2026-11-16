@@ -2,7 +2,7 @@
 
 use serde_json::{Map, Value};
 use zvirb_pdk::Error;
-use zvirb_pdk::engine::{Artifact, ChecksumAlgorithm, Engine, Limits, Plan, Unpack, User};
+use zvirb_pdk::engine::{Artifact, ChecksumAlgorithm, Engine, Limits, Plan, Refusal, Unpack, User};
 
 use crate::{eula, fill, java};
 
@@ -31,7 +31,7 @@ fn accepted_version(settings: &Map<String, Value>) -> Result<(eula::Accepted, &s
     let version = settings
         .get("version")
         .and_then(Value::as_str)
-        .ok_or_else(|| Error::msg("version: a Minecraft version is required"))?;
+        .ok_or_else(|| Refusal::new("version", "a Minecraft version is required"))?;
     Ok((accepted, version))
 }
 

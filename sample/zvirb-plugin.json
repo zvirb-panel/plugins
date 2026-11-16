@@ -3,7 +3,7 @@
   "id": "sample",
   "name": "Sample",
   "version": "0.1.0",
-  "pdk": "^0.2",
+  "pdk": "^0.3",
   "games": [{ "id": "sample", "name": "Sample" }],
   "engines": [
     {

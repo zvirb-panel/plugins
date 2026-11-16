@@ -3,7 +3,8 @@
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use zvirb_pdk::Error;
-use zvirb_pdk::host::http::{self, Method, Request};
+use zvirb_pdk::engine::Refusal;
+use zvirb_pdk::host::http::{self, Method, Request, Response};
 
 const PROJECT: &str = "https://fill.papermc.io/v3/projects/paper";
 
@@ -67,14 +68,21 @@ pub fn version(version: &str) -> Result<Version, Error> {
 /// Paper's newest stable build of Minecraft `version`.
 pub fn newest_stable_build(version: &str) -> Result<Build, Error> {
     // Fill lists builds newest first.
-    let builds: Vec<Build> = get(
+    let builds = get(
         &format!("{PROJECT}/versions/{version}/builds?channel=STABLE"),
         version,
     )?;
-    builds
-        .into_iter()
-        .next()
-        .ok_or_else(|| Error::msg(format!("Paper has no stable build of {version} yet")))
+    newest(builds, version)
+}
+
+fn newest(builds: Vec<Build>, version: &str) -> Result<Build, Error> {
+    builds.into_iter().next().ok_or_else(|| {
+        Refusal::new(
+            "version",
+            format!("Paper has no stable build of {version} yet"),
+        )
+        .into()
+    })
 }
 
 fn get<T: DeserializeOwned>(url: &str, version: &str) -> Result<T, Error> {
@@ -82,14 +90,60 @@ fn get<T: DeserializeOwned>(url: &str, version: &str) -> Result<T, Error> {
     request
         .headers
         .insert("User-Agent".into(), USER_AGENT.into());
-    let response = http::send(&request)?;
+    read(&http::send(&request)?, url, version)
+}
+
+/// What Fill's `response` to `url` holds. Fill answers 404 for a version it
+/// doesn't know, which the person can fix; anything else is Fill's fault.
+fn read<T: DeserializeOwned>(response: &Response, url: &str, version: &str) -> Result<T, Error> {
     match response.status {
         200 => response
             .json()
             .map_err(|err| Error::msg(format!("read Paper's answer from {url}: {err}"))),
-        404 => Err(Error::msg(format!("Paper has no version {version}"))),
+        404 => Err(Refusal::new("version", format!("Paper has no version {version}")).into()),
         status => Err(Error::msg(format!(
             "Paper's download API answered {status}"
         ))),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use super::*;
+
+    fn answer(status: u16) -> Response {
+        Response {
+            status,
+            headers: BTreeMap::new(),
+            body: Vec::new(),
+        }
+    }
+
+    fn refused_setting(err: &Error) -> Option<&str> {
+        err.downcast_ref::<Refusal>().map(|r| r.setting.as_str())
+    }
+
+    #[test]
+    fn a_version_fill_doesnt_know_is_refused() {
+        let err = read::<Version>(&answer(404), PROJECT, "9.9.9").expect_err("404 is no version");
+        assert_eq!(refused_setting(&err), Some("version"));
+        assert!(
+            err.to_string().contains("Paper has no version 9.9.9"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn a_version_without_a_stable_build_is_refused() {
+        let err = newest(Vec::new(), "26.4").expect_err("no builds, no build");
+        assert_eq!(refused_setting(&err), Some("version"));
+    }
+
+    #[test]
+    fn fill_failing_is_not_the_persons_to_fix() {
+        let err = read::<Version>(&answer(503), PROJECT, "1.21.4").expect_err("503 fails");
+        assert_eq!(refused_setting(&err), None);
     }
 }

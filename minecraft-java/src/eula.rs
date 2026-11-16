@@ -2,7 +2,7 @@
 
 use serde_json::{Map, Value};
 use zvirb_pdk::Error;
-use zvirb_pdk::engine::SeededFile;
+use zvirb_pdk::engine::{Refusal, SeededFile};
 
 /// The settings key the settings schemas ask for the EULA under.
 const SETTING: &str = "eula";
@@ -18,9 +18,11 @@ pub fn require_accepted(settings: &Map<String, Value>) -> Result<Accepted, Error
     if settings.get(SETTING) == Some(&Value::Bool(true)) {
         Ok(Accepted(()))
     } else {
-        Err(Error::msg(
-            "eula: the Minecraft EULA has to be accepted before the server is created",
-        ))
+        Err(Refusal::new(
+            SETTING,
+            "the Minecraft EULA has to be accepted before the server is created",
+        )
+        .into())
     }
 }
 
@@ -51,7 +53,11 @@ mod tests {
             json!({ "eula": false }),
             json!({ "eula": "true" }),
         ] {
-            assert!(require_accepted(&settings(&refused)).is_err(), "{refused}");
+            let Err(err) = require_accepted(&settings(&refused)) else {
+                panic!("{refused} is accepted");
+            };
+            let refusal = err.downcast_ref::<Refusal>().expect("a refusal");
+            assert_eq!(refusal.setting, "eula", "{refused}");
         }
     }
 }
