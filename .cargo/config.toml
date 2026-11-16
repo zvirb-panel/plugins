@@ -1,0 +1,4 @@
+# The PDK is a git dependency on a private repository, so Cargo fetches with
+# the `git` command and uses the credentials `gh auth setup-git` installs.
+[net]
+git-fetch-with-cli = true
