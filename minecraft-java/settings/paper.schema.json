@@ -6,6 +6,7 @@
     "version": {
       "type": "string",
       "title": "Version",
+      "x-zvirb-source": "versions",
       "pattern": "^[0-9a-z][0-9a-z.-]*$",
       "description": "The Minecraft version, such as 1.21.4. The server runs Paper's newest stable build of it."
     },

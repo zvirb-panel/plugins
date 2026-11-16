@@ -6,6 +6,7 @@
     "version": {
       "type": "string",
       "title": "Version",
+      "x-zvirb-source": "versions",
       "minLength": 1,
       "description": "The Minecraft version, such as 1.21.4. The server runs Mojang's own server jar for it."
     },
