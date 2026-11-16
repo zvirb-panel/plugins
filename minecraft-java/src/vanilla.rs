@@ -11,9 +11,6 @@ pub struct Vanilla;
 /// Where the plan puts the server jar, in the instance's folder.
 const JAR: &str = "server.jar";
 
-/// The Java versions older than 1.17 ran on, which their files don't name.
-const JAVA_BEFORE_IT_WAS_LISTED: u32 = 8;
-
 impl Engine for Vanilla {
     const ID: &'static str = "vanilla";
 
@@ -41,12 +38,8 @@ fn plan_for(accepted: eula::Accepted, id: &str, version: &mojang::Version) -> Re
         version.downloads.server.as_ref().ok_or_else(|| {
             Refusal::new("version", format!("Mojang publishes no server for {id}"))
         })?;
-    let java = version
-        .java
-        .as_ref()
-        .map_or(JAVA_BEFORE_IT_WAS_LISTED, |java| java.major);
     Ok(Plan {
-        image: java::image(java)?.into(),
+        image: java::image(version.java.major)?.into(),
         env: std::collections::BTreeMap::new(),
         command: ["java", "-jar", JAR, "nogui"].map(String::from).to_vec(),
         limits: Limits::default(),
@@ -108,18 +101,6 @@ mod tests {
             panic!("want one seeded file, got {:?}", plan.seeded_files);
         };
         assert_eq!(eula.content, b"eula=true\n");
-    }
-
-    #[test]
-    fn a_version_from_before_java_was_listed_runs_on_8() {
-        let mut version = fixture();
-        version.java = None;
-        let plan = plan_for(accepted(), "1.8.9", &version).expect("it plans");
-        assert!(
-            plan.image.starts_with("eclipse-temurin:8-jre@"),
-            "{}",
-            plan.image
-        );
     }
 
     #[test]

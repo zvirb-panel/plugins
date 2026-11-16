@@ -25,7 +25,7 @@ pub struct Listed {
 #[derive(Debug, Deserialize)]
 pub struct Version {
     #[serde(rename = "javaVersion")]
-    pub java: Option<Java>,
+    pub java: Java,
     pub downloads: Downloads,
 }
 

@@ -6,7 +6,7 @@
     "version": {
       "type": "string",
       "title": "Version",
-      "pattern": "^[0-9a-z][0-9a-z.-]*$",
+      "minLength": 1,
       "description": "The Minecraft version, such as 1.21.4. The server runs Mojang's own server jar for it."
     },
     "eula": {
