@@ -13,7 +13,15 @@
       "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"], "preferred": 25565 }],
       "stop": { "command": "stop", "signal": "term", "graceSeconds": 30 },
       "settings": "settings/paper.schema.json"
+    },
+    {
+      "game": "minecraft-java",
+      "id": "vanilla",
+      "name": "Vanilla",
+      "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"], "preferred": 25565 }],
+      "stop": { "command": "stop", "signal": "term", "graceSeconds": 30 },
+      "settings": "settings/vanilla.schema.json"
     }
   ],
-  "hosts": ["fill.papermc.io"]
+  "hosts": ["fill.papermc.io", "piston-meta.mojang.com"]
 }

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "eula"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "pattern": "^[0-9a-z][0-9a-z.-]*$",
+      "description": "The Minecraft version, such as 1.21.4. The server runs Mojang's own server jar for it."
+    },
+    "eula": {
+      "type": "boolean",
+      "const": true,
+      "title": "I accept the Minecraft EULA",
+      "x-zvirb-link": "https://www.minecraft.net/en-us/eula"
+    }
+  },
+  "additionalProperties": false
+}

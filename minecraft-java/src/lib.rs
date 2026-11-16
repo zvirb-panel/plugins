@@ -3,9 +3,11 @@
 mod eula;
 mod fill;
 mod java;
+mod mojang;
 mod paper;
+mod vanilla;
 
-zvirb_pdk::plugin! { engines: [paper::Paper] }
+zvirb_pdk::plugin! { engines: [paper::Paper, vanilla::Vanilla] }
 
 #[cfg(test)]
 mod tests {
