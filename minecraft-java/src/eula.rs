@@ -7,12 +7,16 @@ use zvirb_pdk::engine::SeededFile;
 /// The settings key the settings schemas ask for the EULA under.
 const SETTING: &str = "eula";
 
+/// That an instance's settings accept the EULA. Only [`require_accepted`]
+/// makes one, so `eula.txt` can't be seeded without the check.
+pub struct Accepted(());
+
 /// Refuses settings that don't carry the owner's acceptance. The API checks
 /// the settings schema first, so this holds the line only for an instance
 /// whose settings were stored before the schema asked.
-pub fn require_accepted(settings: &Map<String, Value>) -> Result<(), Error> {
+pub fn require_accepted(settings: &Map<String, Value>) -> Result<Accepted, Error> {
     if settings.get(SETTING) == Some(&Value::Bool(true)) {
-        Ok(())
+        Ok(Accepted(()))
     } else {
         Err(Error::msg(
             "eula: the Minecraft EULA has to be accepted before the server is created",
@@ -20,9 +24,8 @@ pub fn require_accepted(settings: &Map<String, Value>) -> Result<(), Error> {
     }
 }
 
-/// The `eula.txt` the server reads its acceptance from, written only from
-/// settings `require_accepted` let through.
-pub fn accepted_file() -> SeededFile {
+/// The `eula.txt` the server reads its acceptance from.
+pub fn accepted_file(_: Accepted) -> SeededFile {
     SeededFile {
         path: "eula.txt".into(),
         content: b"eula=true\n".to_vec(),

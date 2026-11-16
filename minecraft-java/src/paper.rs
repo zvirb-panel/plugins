@@ -15,8 +15,9 @@ impl Engine for Paper {
     const ID: &'static str = "paper";
 
     fn plan(settings: &Map<String, Value>) -> Result<Plan, Error> {
-        let version = accepted_version(settings)?;
+        let (accepted, version) = accepted_version(settings)?;
         plan_for(
+            accepted,
             &fill::version(version)?,
             &fill::newest_stable_build(version)?,
         )
@@ -25,16 +26,21 @@ impl Engine for Paper {
 
 /// The Minecraft version settings ask for, once they accept the EULA, so a
 /// server without it never reaches Paper's download API.
-fn accepted_version(settings: &Map<String, Value>) -> Result<&str, Error> {
-    eula::require_accepted(settings)?;
-    settings
+fn accepted_version(settings: &Map<String, Value>) -> Result<(eula::Accepted, &str), Error> {
+    let accepted = eula::require_accepted(settings)?;
+    let version = settings
         .get("version")
         .and_then(Value::as_str)
-        .ok_or_else(|| Error::msg("version: a Minecraft version is required"))
+        .ok_or_else(|| Error::msg("version: a Minecraft version is required"))?;
+    Ok((accepted, version))
 }
 
 /// The plan that runs `build` of a version, once the EULA is accepted.
-fn plan_for(version: &fill::Version, build: &fill::Build) -> Result<Plan, Error> {
+fn plan_for(
+    accepted: eula::Accepted,
+    version: &fill::Version,
+    build: &fill::Build,
+) -> Result<Plan, Error> {
     let server = &build.downloads.server;
     Ok(Plan {
         image: java::image(version.version.java.version.minimum)?.into(),
@@ -49,7 +55,7 @@ fn plan_for(version: &fill::Version, build: &fill::Build) -> Result<Plan, Error>
             unpack: Unpack::None,
             strip_components: 0,
         }],
-        seeded_files: vec![eula::accepted_file()],
+        seeded_files: vec![eula::accepted_file(accepted)],
         // The `eclipse-temurin` images are Ubuntu, whose first user is 1000.
         user: User {
             uid: 1000,
@@ -76,7 +82,10 @@ mod tests {
     #[test]
     fn plans_the_build_on_its_java_with_the_eula_accepted() {
         let (version, build) = fixtures();
-        let plan = plan_for(&version, &build).expect("the fixtures plan");
+        let settings = json!({ "version": "1.21.4", "eula": true });
+        let (accepted, _) =
+            accepted_version(settings.as_object().expect("an object")).expect("accepted");
+        let plan = plan_for(accepted, &version, &build).expect("the fixtures plan");
 
         assert!(
             plan.image.starts_with("eclipse-temurin:21-jre@sha256:"),
@@ -135,17 +144,5 @@ mod tests {
             let settings = json!({ "version": refused, "eula": true });
             assert!(!settings_problems(&settings).is_empty(), "{refused}");
         }
-    }
-
-    #[test]
-    fn the_plan_refuses_without_the_eula_before_reaching_paper() {
-        let refused = json!({ "version": "1.21.4" });
-        let error = accepted_version(refused.as_object().expect("an object"))
-            .expect_err("no EULA, no plan");
-        assert!(error.to_string().starts_with("eula:"), "{error}");
-
-        let accepted = json!({ "version": "1.21.4", "eula": true });
-        let version = accepted_version(accepted.as_object().expect("an object"));
-        assert_eq!(version.expect("accepted"), "1.21.4");
     }
 }

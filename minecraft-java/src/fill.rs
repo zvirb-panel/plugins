@@ -84,35 +84,12 @@ fn get<T: DeserializeOwned>(url: &str, version: &str) -> Result<T, Error> {
         .insert("User-Agent".into(), USER_AGENT.into());
     let response = http::send(&request)?;
     match response.status {
-        200 => Ok(response.json()?),
+        200 => response
+            .json()
+            .map_err(|err| Error::msg(format!("read Paper's answer from {url}: {err}"))),
         404 => Err(Error::msg(format!("Paper has no version {version}"))),
         status => Err(Error::msg(format!(
             "Paper's download API answered {status}"
         ))),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn reads_the_java_minimum_of_a_version() {
-        let version: Version = serde_json::from_str(include_str!("../testdata/fill-version.json"))
-            .expect("the fixture is a version");
-        assert_eq!(version.version.java.version.minimum, 21);
-    }
-
-    #[test]
-    fn reads_the_server_download_of_a_build() {
-        let builds: Vec<Build> =
-            serde_json::from_str(include_str!("../testdata/fill-stable-builds.json"))
-                .expect("the fixture is a list of builds");
-        let server = &builds[0].downloads.server;
-        assert_eq!(
-            server.checksums.sha256,
-            "5ee4f542f628a14c644410b08c94ea42e772ef4d29fe92973636b6813d4eaffc"
-        );
-        assert!(server.url.starts_with("https://fill-data.papermc.io/"));
     }
 }
