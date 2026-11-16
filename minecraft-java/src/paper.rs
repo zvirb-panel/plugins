@@ -2,6 +2,7 @@
 
 use serde_json::{Map, Value};
 use zvirb_pdk::Error;
+use zvirb_pdk::capability::{Capability, VersionCatalog};
 use zvirb_pdk::engine::{Artifact, ChecksumAlgorithm, Engine, Limits, Plan, Refusal, Unpack, User};
 
 use crate::{eula, fill, java};
@@ -13,6 +14,7 @@ const JAR: &str = "server.jar";
 
 impl Engine for Paper {
     const ID: &'static str = "paper";
+    const CAPABILITIES: &'static [Capability] = &[Capability::version_catalog::<Self>()];
 
     fn plan(settings: &Map<String, Value>) -> Result<Plan, Error> {
         let (accepted, version) = accepted_version(settings)?;
@@ -21,6 +23,12 @@ impl Engine for Paper {
             &fill::version(version)?,
             &fill::newest_stable_build(version)?,
         )
+    }
+}
+
+impl VersionCatalog for Paper {
+    fn versions() -> Result<Vec<String>, Error> {
+        fill::releases()
     }
 }
 

@@ -4,6 +4,7 @@ use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use zvirb_pdk::Error;
 use zvirb_pdk::engine::Refusal;
+use zvirb_pdk::host;
 use zvirb_pdk::host::http::{self, Method, Request, Response};
 
 const PROJECT: &str = "https://fill.papermc.io/v3/projects/paper";
@@ -24,7 +25,14 @@ pub struct Version {
 
 #[derive(Debug, Deserialize)]
 pub struct VersionFacts {
+    pub id: String,
     pub java: Java,
+}
+
+/// Every version Paper builds, newest first.
+#[derive(Debug, Deserialize)]
+struct Versions {
+    versions: Vec<Version>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -62,17 +70,40 @@ pub struct Checksums {
 
 /// What Paper knows of Minecraft `version`.
 pub fn version(version: &str) -> Result<Version, Error> {
-    get(&format!("{PROJECT}/versions/{version}"), version)
+    get(&format!("{PROJECT}/versions/{version}"))?.ok_or_else(|| no_version(version))
 }
 
 /// Paper's newest stable build of Minecraft `version`.
 pub fn newest_stable_build(version: &str) -> Result<Build, Error> {
     // Fill lists builds newest first.
-    let builds = get(
-        &format!("{PROJECT}/versions/{version}/builds?channel=STABLE"),
-        version,
-    )?;
+    let builds = get(&format!(
+        "{PROJECT}/versions/{version}/builds?channel=STABLE"
+    ))?
+    .ok_or_else(|| no_version(version))?;
     newest(builds, version)
+}
+
+/// The Minecraft releases Paper builds, newest first.
+pub fn releases() -> Result<Vec<String>, Error> {
+    let url = format!("{PROJECT}/versions");
+    let listed = get(&url)?
+        .ok_or_else(|| Error::msg(format!("Paper's download API has no version list at {url}")))?;
+    Ok(release_ids(listed))
+}
+
+// Fill lists pre-releases and release candidates beside releases, and only
+// their ids set them apart: 1.21.11-pre5, 26.3-rc-3.
+fn release_ids(listed: Versions) -> Vec<String> {
+    listed
+        .versions
+        .into_iter()
+        .map(|listed| listed.version.id)
+        .filter(|id| !id.contains('-'))
+        .collect()
+}
+
+fn no_version(version: &str) -> Error {
+    Refusal::new("version", format!("Paper has no version {version}")).into()
 }
 
 fn newest(builds: Vec<Build>, version: &str) -> Result<Build, Error> {
@@ -85,24 +116,31 @@ fn newest(builds: Vec<Build>, version: &str) -> Result<Build, Error> {
     })
 }
 
-fn get<T: DeserializeOwned>(url: &str, version: &str) -> Result<T, Error> {
+fn get<T: DeserializeOwned>(url: &str) -> Result<Option<T>, Error> {
     let mut request = Request::new(Method::Get, url);
     request
         .headers
         .insert("User-Agent".into(), USER_AGENT.into());
-    read(&http::send(&request)?, url, version)
+    read(http::send(&request), url)
 }
 
-/// What Fill's `response` to `url` holds. Fill answers 404 for a version it
-/// doesn't know, which the person can fix; anything else is Fill's fault.
-fn read<T: DeserializeOwned>(response: &Response, url: &str, version: &str) -> Result<T, Error> {
+/// What Fill's answer to `url` holds, or `None` when Fill doesn't know what
+/// the URL names. Each failure names Paper's download API, so a catalog that
+/// can't be read never passes for an empty one.
+fn read<T: DeserializeOwned>(
+    sent: Result<Response, host::Error>,
+    url: &str,
+) -> Result<Option<T>, Error> {
+    let response =
+        sent.map_err(|err| Error::msg(format!("ask Paper's download API for {url}: {err}")))?;
     match response.status {
         200 => response
             .json()
+            .map(Some)
             .map_err(|err| Error::msg(format!("read Paper's answer from {url}: {err}"))),
-        404 => Err(Refusal::new("version", format!("Paper has no version {version}")).into()),
+        404 => Ok(None),
         status => Err(Error::msg(format!(
-            "Paper's download API answered {status}"
+            "Paper's download API answered {status} for {url}"
         ))),
     }
 }
@@ -127,12 +165,13 @@ mod tests {
 
     #[test]
     fn a_version_fill_doesnt_know_is_refused() {
-        let err = read::<Version>(&answer(404), PROJECT, "9.9.9").expect_err("404 is no version");
+        assert!(matches!(
+            read::<Version>(Ok(answer(404)), PROJECT),
+            Ok(None)
+        ));
+        let err = no_version("9.9.9");
         assert_eq!(refused_setting(&err), Some("version"));
-        assert!(
-            err.to_string().contains("Paper has no version 9.9.9"),
-            "{err}"
-        );
+        assert_eq!(err.to_string(), "version: Paper has no version 9.9.9");
     }
 
     #[test]
@@ -142,8 +181,25 @@ mod tests {
     }
 
     #[test]
-    fn fill_failing_is_not_the_persons_to_fix() {
-        let err = read::<Version>(&answer(503), PROJECT, "1.21.4").expect_err("503 fails");
-        assert_eq!(refused_setting(&err), None);
+    fn the_releases_are_newest_first_without_pre_releases() {
+        let listed: Versions = serde_json::from_str(include_str!("../testdata/fill-versions.json"))
+            .expect("the fixture is a version list");
+        assert_eq!(
+            release_ids(listed),
+            ["26.3", "26.2", "1.21.11", "1.21.4", "1.7.10"]
+        );
+    }
+
+    #[test]
+    fn fill_failing_or_timing_out_names_it_and_isnt_the_persons_to_fix() {
+        let timed_out = Err(host::Error::Refused {
+            kind: "timed_out".into(),
+            message: "the request passed its deadline".into(),
+        });
+        for sent in [Ok(answer(503)), timed_out] {
+            let err = read::<Versions>(sent, PROJECT).expect_err("no catalog");
+            assert_eq!(refused_setting(&err), None);
+            assert!(err.to_string().contains("Paper's download API"), "{err}");
+        }
     }
 }

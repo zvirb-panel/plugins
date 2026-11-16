@@ -2,6 +2,7 @@
 
 use serde_json::{Map, Value};
 use zvirb_pdk::Error;
+use zvirb_pdk::capability::{Capability, VersionCatalog};
 use zvirb_pdk::engine::{Artifact, ChecksumAlgorithm, Engine, Limits, Plan, Refusal, Unpack, User};
 
 use crate::{eula, java, mojang};
@@ -13,10 +14,17 @@ const JAR: &str = "server.jar";
 
 impl Engine for Vanilla {
     const ID: &'static str = "vanilla";
+    const CAPABILITIES: &'static [Capability] = &[Capability::version_catalog::<Self>()];
 
     fn plan(settings: &Map<String, Value>) -> Result<Plan, Error> {
         let (accepted, version) = accepted_version(settings)?;
         plan_for(accepted, version, &mojang::version(version)?)
+    }
+}
+
+impl VersionCatalog for Vanilla {
+    fn versions() -> Result<Vec<String>, Error> {
+        mojang::releases()
     }
 }
 
