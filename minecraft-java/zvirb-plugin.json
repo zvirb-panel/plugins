@@ -1,0 +1,19 @@
+{
+  "$schema": "./zvirb-plugin.v1.schema.json",
+  "id": "minecraft-java",
+  "name": "Minecraft: Java",
+  "version": "0.1.0",
+  "pdk": "^0.2",
+  "games": [{ "id": "minecraft-java", "name": "Minecraft: Java" }],
+  "engines": [
+    {
+      "game": "minecraft-java",
+      "id": "paper",
+      "name": "Paper",
+      "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"], "preferred": 25565 }],
+      "stop": { "command": "stop", "signal": "term", "graceSeconds": 30 },
+      "settings": "settings/paper.schema.json"
+    }
+  ],
+  "hosts": ["fill.papermc.io"]
+}
