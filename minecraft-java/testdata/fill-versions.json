@@ -1,0 +1,181 @@
+{
+  "versions": [
+    {
+      "version": {
+        "id": "26.3",
+        "support": {
+          "status": "SUPPORTED"
+        },
+        "java": {
+          "version": {
+            "minimum": 25
+          },
+          "flags": {
+            "recommended": [
+              "-XX:+UseCompactObjectHeaders"
+            ]
+          }
+        }
+      },
+      "builds": [
+        3,
+        4
+      ]
+    },
+    {
+      "version": {
+        "id": "26.3-rc-3",
+        "support": {
+          "status": "UNSUPPORTED",
+          "end": "2026-09-15"
+        },
+        "java": {
+          "version": {
+            "minimum": 25
+          },
+          "flags": {
+            "recommended": [
+              "-XX:+UseCompactObjectHeaders"
+            ]
+          }
+        }
+      },
+      "builds": [
+        1
+      ]
+    },
+    {
+      "version": {
+        "id": "26.2",
+        "support": {
+          "status": "UNSUPPORTED",
+          "end": "2026-11-03"
+        },
+        "java": {
+          "version": {
+            "minimum": 25
+          },
+          "flags": {
+            "recommended": [
+              "-XX:+AlwaysPreTouch"
+            ]
+          }
+        }
+      },
+      "builds": [
+        10,
+        11
+      ]
+    },
+    {
+      "version": {
+        "id": "1.21.11",
+        "support": {
+          "status": "UNSUPPORTED",
+          "end": "2026-06-15"
+        },
+        "java": {
+          "version": {
+            "minimum": 21
+          },
+          "flags": {
+            "recommended": [
+              "-XX:+AlwaysPreTouch"
+            ]
+          }
+        }
+      },
+      "builds": [
+        34,
+        35
+      ]
+    },
+    {
+      "version": {
+        "id": "1.21.11-pre5",
+        "support": {
+          "status": "UNSUPPORTED",
+          "end": "2025-12-04"
+        },
+        "java": {
+          "version": {
+            "minimum": 21
+          },
+          "flags": {
+            "recommended": [
+              "-XX:+AlwaysPreTouch"
+            ]
+          }
+        }
+      },
+      "builds": [
+        14,
+        16
+      ]
+    },
+    {
+      "version": {
+        "id": "1.21.4",
+        "support": {
+          "status": "UNSUPPORTED",
+          "end": "2025-07-17"
+        },
+        "java": {
+          "version": {
+            "minimum": 21
+          },
+          "flags": {
+            "recommended": [
+              "-XX:+AlwaysPreTouch"
+            ]
+          }
+        }
+      },
+      "builds": [
+        1,
+        2
+      ]
+    },
+    {
+      "version": {
+        "id": "1.13-pre7",
+        "support": {
+          "status": "UNSUPPORTED"
+        },
+        "java": {
+          "version": {
+            "minimum": 8
+          },
+          "flags": {
+            "recommended": [
+              "-XX:+AlwaysPreTouch"
+            ]
+          }
+        }
+      },
+      "builds": [
+        1,
+        2
+      ]
+    },
+    {
+      "version": {
+        "id": "1.7.10",
+        "support": {
+          "status": "UNSUPPORTED"
+        },
+        "java": {
+          "version": {
+            "minimum": 6
+          },
+          "flags": {
+            "recommended": []
+          }
+        }
+      },
+      "builds": [
+        2025
+      ]
+    }
+  ]
+}

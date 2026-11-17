@@ -3,7 +3,16 @@
   "id": "sample",
   "name": "Sample",
   "version": "0.1.0",
-  "pdk": "^0.1",
+  "pdk": "^0.3",
   "games": [{ "id": "sample", "name": "Sample" }],
-  "engines": [{ "game": "sample", "id": "sample", "name": "Sample" }]
+  "engines": [
+    {
+      "game": "sample",
+      "id": "sample",
+      "name": "Sample",
+      "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"] }],
+      "stop": { "command": "stop", "graceSeconds": 10 },
+      "views": ["views/about.json"]
+    }
+  ]
 }

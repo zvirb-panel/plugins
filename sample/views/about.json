@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "sample.about",
+  "placement": "instance-tab",
+  "title": "About",
+  "order": 0,
+  "permission": "instances.manage",
+  "body": [
+    { "type": "Page", "title": "About" },
+    {
+      "type": "KeyValues",
+      "items": [
+        { "label": "Engine", "value": "Sample" },
+        { "label": "Image", "value": "zvirb/sample:latest" }
+      ]
+    }
+  ]
+}

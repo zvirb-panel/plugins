@@ -1,0 +1,33 @@
+{
+  "$schema": "./zvirb-plugin.v1.schema.json",
+  "id": "minecraft-java",
+  "name": "Minecraft: Java",
+  "version": "0.1.0",
+  "pdk": "^0.4",
+  "games": [{ "id": "minecraft-java", "name": "Minecraft: Java" }],
+  "engines": [
+    {
+      "game": "minecraft-java",
+      "id": "paper",
+      "name": "Paper",
+      "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"], "preferred": 25565 }],
+      "stop": { "command": "stop", "signal": "term", "graceSeconds": 30 },
+      "ready": { "pattern": "^\\[[0-9:]+ INFO\\]: Done \\([0-9.,]+s\\)! For help" },
+      "settings": "settings/paper.schema.json",
+      "views": ["views/paper-settings.json"],
+      "capabilities": ["version-catalog"]
+    },
+    {
+      "game": "minecraft-java",
+      "id": "vanilla",
+      "name": "Vanilla",
+      "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"], "preferred": 25565 }],
+      "stop": { "command": "stop", "signal": "term", "graceSeconds": 30 },
+      "ready": { "pattern": "^\\[[0-9:]+\\] \\[Server thread/INFO\\]: Done \\([0-9.,]+s\\)! For help" },
+      "settings": "settings/vanilla.schema.json",
+      "views": ["views/vanilla-settings.json"],
+      "capabilities": ["version-catalog"]
+    }
+  ],
+  "hosts": ["fill.papermc.io", "piston-meta.mojang.com"]
+}

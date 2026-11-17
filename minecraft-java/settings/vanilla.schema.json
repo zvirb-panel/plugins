@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["version", "eula"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "x-zvirb-source": "versions",
+      "minLength": 1,
+      "description": "The Minecraft version, such as 1.21.4. The server runs Mojang's own server jar for it."
+    },
+    "motd": {
+      "type": "string",
+      "title": "Message of the day",
+      "maxLength": 256,
+      "pattern": "^[^\\x00-\\x1f\\x7f]*$",
+      "default": "A Minecraft Server",
+      "description": "The line players see under the server's name in their server list."
+    },
+    "max-players": {
+      "type": "integer",
+      "title": "Player limit",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 20,
+      "description": "How many players can be online at once."
+    },
+    "gamemode": {
+      "type": "string",
+      "title": "Game mode",
+      "oneOf": [
+        {
+          "const": "survival",
+          "title": "Survival"
+        },
+        {
+          "const": "creative",
+          "title": "Creative"
+        },
+        {
+          "const": "adventure",
+          "title": "Adventure"
+        },
+        {
+          "const": "spectator",
+          "title": "Spectator"
+        }
+      ],
+      "default": "survival",
+      "description": "The mode new players join in."
+    },
+    "force-gamemode": {
+      "type": "boolean",
+      "title": "Force game mode",
+      "default": false,
+      "description": "Players join in the game mode above every time, not the one they left in."
+    },
+    "difficulty": {
+      "type": "string",
+      "title": "Difficulty",
+      "oneOf": [
+        {
+          "const": "peaceful",
+          "title": "Peaceful"
+        },
+        {
+          "const": "easy",
+          "title": "Easy"
+        },
+        {
+          "const": "normal",
+          "title": "Normal"
+        },
+        {
+          "const": "hard",
+          "title": "Hard"
+        }
+      ],
+      "default": "easy",
+      "description": "How hard the world is. Peaceful has no hostile mobs."
+    },
+    "hardcore": {
+      "type": "boolean",
+      "title": "Hardcore",
+      "default": false,
+      "description": "Players who die are made spectators, and the difficulty stays hard."
+    },
+    "pvp": {
+      "type": "boolean",
+      "title": "Player versus player",
+      "default": true,
+      "description": "Players can hurt each other."
+    },
+    "white-list": {
+      "type": "boolean",
+      "title": "Whitelist",
+      "default": false,
+      "description": "Only players on the whitelist can join."
+    },
+    "online-mode": {
+      "type": "boolean",
+      "title": "Check accounts with Mojang",
+      "default": true,
+      "description": "Only players with a real Minecraft account can join. Turn it off only behind a proxy that checks them."
+    },
+    "allow-flight": {
+      "type": "boolean",
+      "title": "Allow flight",
+      "default": false,
+      "description": "Players flying in survival, through a mod or a client, aren't kicked."
+    },
+    "spawn-monsters": {
+      "type": "boolean",
+      "title": "Monsters",
+      "default": true,
+      "description": "Hostile mobs spawn."
+    },
+    "allow-nether": {
+      "type": "boolean",
+      "title": "The Nether",
+      "default": true,
+      "description": "Players can travel to the Nether."
+    },
+    "enable-command-block": {
+      "type": "boolean",
+      "title": "Command blocks",
+      "default": false,
+      "description": "Command blocks run their commands."
+    },
+    "spawn-protection": {
+      "type": "integer",
+      "title": "Spawn protection",
+      "minimum": 0,
+      "maximum": 1000,
+      "default": 16,
+      "description": "The radius around spawn, in blocks, that only operators can build in. 0 turns it off."
+    },
+    "view-distance": {
+      "type": "integer",
+      "title": "View distance",
+      "minimum": 3,
+      "maximum": 32,
+      "default": 10,
+      "description": "How many chunks around each player the server sends, as a radius."
+    },
+    "simulation-distance": {
+      "type": "integer",
+      "title": "Simulation distance",
+      "minimum": 3,
+      "maximum": 32,
+      "default": 10,
+      "description": "How many chunks around each player keep running, as a radius."
+    },
+    "level-seed": {
+      "type": "string",
+      "title": "World seed",
+      "maxLength": 256,
+      "pattern": "^[^\\x00-\\x1f\\x7f]*$",
+      "default": "",
+      "description": "The seed a new world is made from. Empty picks one at random. It changes nothing once the world exists."
+    },
+    "level-type": {
+      "type": "string",
+      "title": "World type",
+      "oneOf": [
+        {
+          "const": "minecraft:normal",
+          "title": "Normal"
+        },
+        {
+          "const": "minecraft:flat",
+          "title": "Superflat"
+        },
+        {
+          "const": "minecraft:large_biomes",
+          "title": "Large biomes"
+        },
+        {
+          "const": "minecraft:amplified",
+          "title": "Amplified"
+        },
+        {
+          "const": "minecraft:single_biome_surface",
+          "title": "Single biome"
+        }
+      ],
+      "default": "minecraft:normal",
+      "description": "The kind of world a new world is made as. It changes nothing once the world exists."
+    },
+    "eula": {
+      "type": "boolean",
+      "const": true,
+      "title": "I accept the Minecraft EULA",
+      "x-zvirb-link": "https://www.minecraft.net/en-us/eula"
+    }
+  },
+  "additionalProperties": false
+}

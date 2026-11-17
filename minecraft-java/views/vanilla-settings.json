@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "minecraft-java.vanilla-settings",
+  "placement": "instance-tab",
+  "title": "Settings",
+  "order": 10,
+  "permission": "instances.manage",
+  "body": [
+    {
+      "type": "Section",
+      "heading": "Settings",
+      "body": [
+        { "type": "Paragraph", "text": "Changes apply the next time the server starts." },
+        { "type": "SettingsForm" }
+      ]
+    }
+  ]
+}

@@ -408,6 +408,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a86d3146ed3995b5913c414f6664344b9617457320782e64f0bb44afd49d74"
 
 [[package]]
+name = "minecraft-java"
+version = "0.1.0"
+dependencies = [
+ "jsonschema",
+ "serde",
+ "serde_json",
+ "zvirb-pdk 0.3.0",
+]
+
+[[package]]
 name = "num"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -699,7 +709,7 @@ version = "0.1.0"
 dependencies = [
  "jsonschema",
  "serde_json",
- "zvirb-pdk",
+ "zvirb-pdk 0.4.0",
 ]
 
 [[package]]
@@ -966,8 +976,18 @@ checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
 
 [[package]]
 name = "zvirb-pdk"
-version = "0.1.0"
-source = "git+https://github.com/zvirb-panel/zvirb?tag=pdk-v0.1.0#59aa430b0214691d3c90ebdac81cc8ca8c6d0163"
+version = "0.3.0"
+source = "git+https://github.com/zvirb-panel/zvirb?rev=d1b82a1575933695c527de5a4b5856127ad280eb#d1b82a1575933695c527de5a4b5856127ad280eb"
+dependencies = [
+ "extism-pdk",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "zvirb-pdk"
+version = "0.4.0"
+source = "git+https://github.com/zvirb-panel/zvirb?tag=pdk-v0.4.0#d4b8d284cafab8285e7d30d456c899117383ec01"
 dependencies = [
  "extism-pdk",
  "serde",
