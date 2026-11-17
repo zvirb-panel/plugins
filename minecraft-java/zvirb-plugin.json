@@ -3,7 +3,7 @@
   "id": "minecraft-java",
   "name": "Minecraft: Java",
   "version": "0.1.0",
-  "pdk": "^0.3",
+  "pdk": "^0.4",
   "games": [{ "id": "minecraft-java", "name": "Minecraft: Java" }],
   "engines": [
     {

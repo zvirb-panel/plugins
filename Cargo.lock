@@ -976,8 +976,8 @@ checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
 
 [[package]]
 name = "zvirb-pdk"
-version = "0.3.0"
-source = "git+https://github.com/zvirb-panel/zvirb?tag=pdk-v0.3.0#88aa2df1ca3f1237c5825c23cc78b1dcfce843aa"
+version = "0.4.0"
+source = "git+https://github.com/zvirb-panel/zvirb?tag=pdk-v0.4.0#d4b8d284cafab8285e7d30d456c899117383ec01"
 dependencies = [
  "extism-pdk",
  "serde",

@@ -10,7 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-zvirb-pdk = { git = "https://github.com/zvirb-panel/zvirb", tag = "pdk-v0.3.0" }
+zvirb-pdk = { git = "https://github.com/zvirb-panel/zvirb", tag = "pdk-v0.4.0" }
 
 [dev-dependencies]
 jsonschema = { version = "0.61", default-features = false }
