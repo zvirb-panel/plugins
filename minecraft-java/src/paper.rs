@@ -5,7 +5,7 @@ use zvirb_pdk::Error;
 use zvirb_pdk::capability::{Capability, VersionCatalog};
 use zvirb_pdk::engine::{Artifact, ChecksumAlgorithm, Engine, Limits, Plan, Refusal, Unpack, User};
 
-use crate::{eula, fill, java};
+use crate::{eula, fill, java, properties};
 
 pub struct Paper;
 
@@ -18,11 +18,15 @@ impl Engine for Paper {
 
     fn plan(settings: &Map<String, Value>) -> Result<Plan, Error> {
         let (accepted, version) = accepted_version(settings)?;
-        plan_for(
+        // Refused settings never reach Paper's download API.
+        let properties = properties::patch(settings)?;
+        let mut plan = plan_for(
             accepted,
             &fill::version(version)?,
             &fill::newest_stable_build(version)?,
-        )
+        )?;
+        plan.seeded_files.extend(properties);
+        Ok(plan)
     }
 }
 

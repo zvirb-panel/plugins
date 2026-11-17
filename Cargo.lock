@@ -414,7 +414,7 @@ dependencies = [
  "jsonschema",
  "serde",
  "serde_json",
- "zvirb-pdk",
+ "zvirb-pdk 0.3.0",
 ]
 
 [[package]]
@@ -709,7 +709,7 @@ version = "0.1.0"
 dependencies = [
  "jsonschema",
  "serde_json",
- "zvirb-pdk",
+ "zvirb-pdk 0.4.0",
 ]
 
 [[package]]
@@ -973,6 +973,16 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[package]]
+name = "zvirb-pdk"
+version = "0.3.0"
+source = "git+https://github.com/zvirb-panel/zvirb?rev=d1b82a1575933695c527de5a4b5856127ad280eb#d1b82a1575933695c527de5a4b5856127ad280eb"
+dependencies = [
+ "extism-pdk",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "zvirb-pdk"

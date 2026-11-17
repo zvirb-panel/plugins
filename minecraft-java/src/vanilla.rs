@@ -5,7 +5,7 @@ use zvirb_pdk::Error;
 use zvirb_pdk::capability::{Capability, VersionCatalog};
 use zvirb_pdk::engine::{Artifact, ChecksumAlgorithm, Engine, Limits, Plan, Refusal, Unpack, User};
 
-use crate::{eula, java, mojang};
+use crate::{eula, java, mojang, properties};
 
 pub struct Vanilla;
 
@@ -18,7 +18,11 @@ impl Engine for Vanilla {
 
     fn plan(settings: &Map<String, Value>) -> Result<Plan, Error> {
         let (accepted, version) = accepted_version(settings)?;
-        plan_for(accepted, version, &mojang::version(version)?)
+        // Refused settings never reach Mojang's version API.
+        let properties = properties::patch(settings)?;
+        let mut plan = plan_for(accepted, version, &mojang::version(version)?)?;
+        plan.seeded_files.extend(properties);
+        Ok(plan)
     }
 }
 

@@ -2,7 +2,7 @@
 
 use serde_json::{Map, Value};
 use zvirb_pdk::Error;
-use zvirb_pdk::engine::{Refusal, SeededFile};
+use zvirb_pdk::engine::{Refusal, SeedKind, SeededFile};
 
 /// The settings key the settings schemas ask for the EULA under.
 const SETTING: &str = "eula";
@@ -32,6 +32,7 @@ pub fn accepted_file(_: Accepted) -> SeededFile {
         path: "eula.txt".into(),
         content: b"eula=true\n".to_vec(),
         mode: None,
+        kind: SeedKind::Whole,
     }
 }
 

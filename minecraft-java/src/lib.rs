@@ -5,6 +5,7 @@ mod fill;
 mod java;
 mod mojang;
 mod paper;
+mod properties;
 mod vanilla;
 
 zvirb_pdk::plugin! { engines: [paper::Paper, vanilla::Vanilla] }
