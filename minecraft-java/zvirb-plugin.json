@@ -12,6 +12,7 @@
       "name": "Paper",
       "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"], "preferred": 25565 }],
       "stop": { "command": "stop", "signal": "term", "graceSeconds": 30 },
+      "ready": { "pattern": "^\\[[0-9:]+ INFO\\]: Done \\([0-9.,]+s\\)! For help" },
       "settings": "settings/paper.schema.json",
       "capabilities": ["version-catalog"]
     },
@@ -21,6 +22,7 @@
       "name": "Vanilla",
       "ports": [{ "name": "game", "containerPort": 25565, "protocols": ["tcp"], "preferred": 25565 }],
       "stop": { "command": "stop", "signal": "term", "graceSeconds": 30 },
+      "ready": { "pattern": "^\\[[0-9:]+\\] \\[Server thread/INFO\\]: Done \\([0-9.,]+s\\)! For help" },
       "settings": "settings/vanilla.schema.json",
       "capabilities": ["version-catalog"]
     }
