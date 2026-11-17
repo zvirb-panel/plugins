@@ -1,0 +1,104 @@
+# Keeps a release pull request open per plugin. Merging one tags
+# <plugin>-v<version>; the publish job then builds and packs that plugin,
+# attaches the archive to the release, and opens a pull request to
+# plugin-registry adding the version to the signed index. Merging that one
+# publishes it.
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Release jobs read CI_RUNNER_RELEASE, never CI_RUNNER: no check job may share a
+# runner with a job that can tag or publish (docs/guides/ci-runner.md in the workspace).
+jobs:
+  release-please:
+    runs-on: ${{ vars.CI_RUNNER_RELEASE && fromJSON(vars.CI_RUNNER_RELEASE) || 'ubuntu-latest' }}
+    outputs:
+      paths: ${{ steps.release.outputs.paths_released }}
+      outputs: ${{ toJSON(steps.release.outputs) }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.paths != '' && needs.release-please.outputs.paths != '[]'
+    runs-on: ${{ vars.CI_RUNNER_RELEASE && fromJSON(vars.CI_RUNNER_RELEASE) || 'ubuntu-latest' }}
+    strategy:
+      matrix:
+        plugin: ${{ fromJSON(needs.release-please.outputs.paths) }}
+    env:
+      MISE_LOCKED: 1
+      # The registry's checkout sits inside this one and brings its own mise.toml.
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      PLUGIN: ${{ matrix.plugin }}
+      TAG: ${{ fromJSON(needs.release-please.outputs.outputs)[format('{0}--tag_name', matrix.plugin)] }}
+      VERSION: ${{ fromJSON(needs.release-please.outputs.outputs)[format('{0}--version', matrix.plugin)] }}
+    steps:
+      # The workflow's own token reaches this repository only. The app's
+      # reaches the private PDK in zvirb and opens the registry's pull request.
+      - id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: zvirb-panel
+          repositories: zvirb,plugin-registry
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: zvirb-panel/plugin-registry
+          path: target/plugin-registry
+          token: ${{ steps.app.outputs.token }}
+      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
+      # Cargo fetches the PDK with git, which takes the token from this step's
+      # environment, so it is written to no config file the runner keeps.
+      - name: Build the module
+        env:
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: url.https://x-access-token:${{ steps.app.outputs.token }}@github.com/zvirb-panel/zvirb.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/zvirb-panel/zvirb
+        run: cargo build --locked --target wasm32-unknown-unknown --release -p "$PLUGIN"
+      - name: Pack and attach the archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          archive="$RUNNER_TEMP/$PLUGIN-$VERSION.tar.gz"
+          node scripts/pack.mjs "$PLUGIN" "$archive" > "$RUNNER_TEMP/release.json"
+          gh release upload "$TAG" "$archive" --clobber
+      - name: Sign the index with the version added
+        working-directory: target/plugin-registry
+        env:
+          REGISTRY_SIGNING_KEY: ${{ secrets.REGISTRY_SIGNING_KEY }}
+        run: |
+          mise install
+          mise exec -- npm ci
+          mise exec -- node scripts/add-version.mjs "$RUNNER_TEMP/release.json"
+          mise exec -- node scripts/sign.mjs
+          mise exec -- node scripts/check-index.mjs
+      - name: Open the registry's pull request
+        working-directory: target/plugin-registry
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          branch="release/$TAG"
+          git config user.name "zvirb-release[bot]"
+          git config user.email "zvirb-release[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add index.json index.json.sig
+          git commit -m "feat($PLUGIN): publish $VERSION"
+          git push origin "$branch"
+          gh pr create --repo zvirb-panel/plugin-registry --head "$branch" \
+            --title "feat($PLUGIN): publish $VERSION" \
+            --body "Adds $PLUGIN $VERSION from https://github.com/zvirb-panel/plugins/releases/tag/$TAG to the signed index."
