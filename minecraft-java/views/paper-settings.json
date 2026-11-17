@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "id": "minecraft-java.paper-settings",
+  "placement": "instance-tab",
+  "title": "Settings",
+  "order": 10,
+  "permission": "instances.manage",
+  "body": [
+    { "type": "Page", "title": "Settings", "lede": "Changes apply the next time the server starts." },
+    { "type": "SettingsForm" }
+  ]
+}

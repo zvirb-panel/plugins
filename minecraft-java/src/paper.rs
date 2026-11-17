@@ -157,4 +157,13 @@ mod tests {
             assert!(!settings_problems(&settings).is_empty(), "{refused}");
         }
     }
+
+    // A line break would end the property and start one the schema doesn't name.
+    #[test]
+    fn the_settings_schema_refuses_a_line_break_in_text() {
+        for setting in ["motd", "level-seed"] {
+            let settings = json!({ "version": "1.21.4", "eula": true, setting: "a\nop=true" });
+            assert!(!settings_problems(&settings).is_empty(), "{setting}");
+        }
+    }
 }
