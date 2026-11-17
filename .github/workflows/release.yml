@@ -70,23 +70,31 @@ jobs:
           GIT_CONFIG_KEY_0: url.https://x-access-token:${{ steps.app.outputs.token }}@github.com/zvirb-panel/zvirb.insteadOf
           GIT_CONFIG_VALUE_0: https://github.com/zvirb-panel/zvirb
         run: cargo build --locked --target wasm32-unknown-unknown --release -p "$PLUGIN"
-      - name: Pack and attach the archive
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          archive="$RUNNER_TEMP/$PLUGIN-$VERSION.tar.gz"
-          node scripts/pack.mjs "$PLUGIN" "$archive" > "$RUNNER_TEMP/release.json"
-          gh release upload "$TAG" "$archive" --clobber
-      - name: Sign the index with the version added
+      - name: Pack the archive
+        run: node scripts/pack.mjs "$PLUGIN" "$RUNNER_TEMP/$PLUGIN-$VERSION.tar.gz" "$TAG" > "$RUNNER_TEMP/release.json"
+      - name: Add the version to the index
         working-directory: target/plugin-registry
-        env:
-          REGISTRY_SIGNING_KEY: ${{ secrets.REGISTRY_SIGNING_KEY }}
         run: |
           mise install
           mise exec -- npm ci
           mise exec -- node scripts/add-version.mjs "$RUNNER_TEMP/release.json"
-          mise exec -- node scripts/sign.mjs
-          mise exec -- node scripts/check-index.mjs
+      # The key is in this step's environment alone, which runs no installed
+      # package's script; sign.mjs keeps it from Prettier.
+      - name: Sign the index
+        working-directory: target/plugin-registry
+        env:
+          REGISTRY_SIGNING_KEY: ${{ secrets.REGISTRY_SIGNING_KEY }}
+        run: mise exec -- node scripts/sign.mjs
+      - name: Check the signed index
+        working-directory: target/plugin-registry
+        run: mise exec -- node scripts/check-index.mjs
+      # Uploaded once the index naming its sha256 checks, and never replaced:
+      # a rebuild isn't byte for byte the same, so a re-run fails here rather
+      # than break an archive an index already names.
+      - name: Attach the archive to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" "$RUNNER_TEMP/$PLUGIN-$VERSION.tar.gz"
       - name: Open the registry's pull request
         working-directory: target/plugin-registry
         env:
@@ -94,11 +102,11 @@ jobs:
         run: |
           branch="release/$TAG"
           git config user.name "zvirb-release[bot]"
-          git config user.email "zvirb-release[bot]@users.noreply.github.com"
+          git config user.email "357966957+zvirb-release[bot]@users.noreply.github.com"
           git switch -c "$branch"
           git add index.json index.json.sig
-          git commit -m "feat($PLUGIN): publish $VERSION"
+          git commit -m "feat(index): publish $PLUGIN $VERSION"
           git push origin "$branch"
           gh pr create --repo zvirb-panel/plugin-registry --head "$branch" \
-            --title "feat($PLUGIN): publish $VERSION" \
+            --title "feat(index): publish $PLUGIN $VERSION" \
             --body "Adds $PLUGIN $VERSION from https://github.com/zvirb-panel/plugins/releases/tag/$TAG to the signed index."

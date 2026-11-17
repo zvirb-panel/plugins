@@ -2,17 +2,19 @@
 // zvirb-plugin.json, the files that names, its points/ folder and its module
 // as plugin.wasm, all at the root. Prints what plugin-registry's add-version
 // script reads: the plugin's index entry and the archive's url, sha256 and size.
-//   node scripts/pack.mjs <plugin id> <archive path>
+// The url is the release tag's asset of the archive's file name, both decided
+// by the caller, which uploads it there.
+//   node scripts/pack.mjs <plugin id> <archive path> <release tag>
 // Build the module first: cargo build --locked --target wasm32-unknown-unknown --release -p <plugin id>
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 
-const [id, archivePath] = process.argv.slice(2);
-if (id === undefined || archivePath === undefined) {
-  console.error("usage: node scripts/pack.mjs <plugin id> <archive path>");
+const [id, archivePath, tag] = process.argv.slice(2);
+if (id === undefined || archivePath === undefined || tag === undefined) {
+  console.error("usage: node scripts/pack.mjs <plugin id> <archive path> <release tag>");
   process.exit(1);
 }
 
@@ -63,13 +65,12 @@ try {
     "--use-compress-program=gzip -n", "-cf", archive, "-C", staging, ".",
   ]);
   const bytes = readFileSync(archive);
-  const tag = `${id}-v${crate.version}`;
   const release = {
     plugin: { id, name: manifest.name, summary: crate.description, games: manifest.games },
     version: crate.version,
     pdk: manifest.pdk,
     archive: {
-      url: `https://github.com/zvirb-panel/plugins/releases/download/${tag}/${id}-${crate.version}.tar.gz`,
+      url: `https://github.com/zvirb-panel/plugins/releases/download/${tag}/${basename(archive)}`,
       sha256: createHash("sha256").update(bytes).digest("hex"),
       size: statSync(archive).size,
     },
