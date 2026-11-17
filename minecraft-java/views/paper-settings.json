@@ -6,7 +6,13 @@
   "order": 10,
   "permission": "instances.manage",
   "body": [
-    { "type": "Page", "title": "Settings", "lede": "Changes apply the next time the server starts." },
-    { "type": "SettingsForm" }
+    {
+      "type": "Section",
+      "heading": "Settings",
+      "body": [
+        { "type": "Paragraph", "text": "Changes apply the next time the server starts." },
+        { "type": "SettingsForm" }
+      ]
+    }
   ]
 }

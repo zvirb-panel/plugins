@@ -16,7 +16,7 @@ mod tests {
 
     use serde_json::Value;
     use zvirb_pdk::view::{
-        Page, PageLede, Permission, SettingsForm, View, ViewPlacement, Words, error,
+        Paragraph, Permission, Section, SettingsForm, View, ViewPlacement, Words, error,
     };
 
     // `mise run check` installs `zvirb-pdk` at the PDK tag the crate builds against,
@@ -52,10 +52,17 @@ mod tests {
             ("paper", include_str!("../views/paper-settings.json")),
             ("vanilla", include_str!("../views/vanilla-settings.json")),
         ] {
-            let page = Page::try_from(Page::builder().title("Settings").lede(PageLede::Words(
-                Words::try_from("Changes apply the next time the server starts.")?,
-            )))?;
+            // A tab sits under the server's own head, so it names itself with a
+            // section, not a second page title.
+            let note = Paragraph::try_from(Paragraph::builder().text(Words::try_from(
+                "Changes apply the next time the server starts.",
+            )?))?;
             let settings_form = SettingsForm::try_from(SettingsForm::builder())?;
+            let section = Section::try_from(
+                Section::builder()
+                    .heading(Words::try_from("Settings")?)
+                    .body(vec![note.into(), settings_form.into()]),
+            )?;
             let view = View::try_from(
                 View::builder()
                     .id(format!("minecraft-java.{engine}-settings"))
@@ -63,7 +70,7 @@ mod tests {
                     .title("Settings")
                     .order(10_u64)
                     .permission(Permission::from("instances.manage".to_owned()))
-                    .body(vec![page.into(), settings_form.into()]),
+                    .body(vec![section.into()]),
             )?;
 
             let file: Value = serde_json::from_str(file).expect("the view file is JSON");
