@@ -8,26 +8,26 @@ use serde_json::{Map, Value};
 use zvirb_pdk::Error;
 use zvirb_pdk::engine::{Refusal, SeedKind, SeededFile};
 
-/// The keys, in the order the settings schemas list them.
+/// The keys the settings schemas name.
 pub const KEYS: &[&str] = &[
     "motd",
     "max-players",
-    "difficulty",
     "gamemode",
+    "force-gamemode",
+    "difficulty",
     "hardcore",
     "pvp",
-    "online-mode",
     "white-list",
+    "online-mode",
+    "allow-flight",
+    "spawn-monsters",
+    "allow-nether",
+    "enable-command-block",
+    "spawn-protection",
     "view-distance",
     "simulation-distance",
-    "spawn-protection",
     "level-seed",
-    "allow-flight",
-    "enable-command-block",
-    "allow-nether",
-    "spawn-monsters",
     "level-type",
-    "force-gamemode",
 ];
 
 /// The patch of `server.properties` for the keys `settings` sets, or none
@@ -133,6 +133,22 @@ mod tests {
             named.sort_unstable();
             keys.sort_unstable();
             assert_eq!(named, keys);
+        }
+    }
+
+    // A line break would end the property and start one the schema doesn't name.
+    #[test]
+    fn both_schemas_refuse_a_line_break_in_text() {
+        for schema in [
+            include_str!("../settings/paper.schema.json"),
+            include_str!("../settings/vanilla.schema.json"),
+        ] {
+            let schema: Value = serde_json::from_str(schema).expect("the schema is JSON");
+            let validator = jsonschema::validator_for(&schema).expect("the schema compiles");
+            for setting in ["motd", "level-seed"] {
+                let settings = json!({ "version": "1.21.4", "eula": true, setting: "a\nop=true" });
+                assert!(!validator.is_valid(&settings), "{setting}");
+            }
         }
     }
 
