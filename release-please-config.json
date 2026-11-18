@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bump-minor-pre-major": true,
+  "separate-pull-requests": true,
+  "plugins": [{ "type": "cargo-workspace", "merge": false }],
+  "packages": {
+    "minecraft-java": {
+      "release-type": "rust",
+      "component": "minecraft-java",
+      "include-component-in-tag": true,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "zvirb-plugin.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}
